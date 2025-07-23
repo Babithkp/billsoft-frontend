@@ -3,7 +3,7 @@ name: Tauri Build and Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 permissions:
@@ -15,18 +15,21 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Debugging (do not do this!)
+        run: echo "TAURI_SIGNING_PRIVATE_KEY ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" "TAURI_SIGNING_PRIVATE_KEY_PASSWORD ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: "lts/*"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: 'latest'
+          bun-version: "latest"
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -34,7 +37,7 @@ jobs:
       - name: Cache Rust
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: './src-tauri -> target'
+          workspaces: "./src-tauri -> target"
 
       - name: Install dependencies
         run: bun install
@@ -48,7 +51,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "shreeln v__VERSION__"
+          releaseName: "billsoft v__VERSION__"
           releaseDraft: false
           prerelease: false
           args: ""
