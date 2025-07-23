@@ -18,7 +18,6 @@ export default function InvoicePage({
   const [quoteToEdit, setQuoteToEdit] = useState<QuoteInputs>();
   const [invoiceToEdit, setInvoiceToEdit] = useState<InvoiceInput>();
   const [invoice, setInvoice] = useState<InvoiceInput[]>(data ?? []);
-  const [convertInvoiceToQuote, setConvertInvoiceToQuote] = useState<InvoiceInput>();
 
   const [section, setSection] = useState({
     invoice: true,
@@ -111,7 +110,6 @@ export default function InvoicePage({
             <Quotation
               setSection={setSection}
               setQouteToEdit={setQuoteToEdit}
-              setConvertInvoiceToQuote={setConvertInvoiceToQuote}
             />
           )}
         </>

@@ -95,11 +95,9 @@ const getMailGreeting =
 export default function Quotation({
   setSection,
   setQouteToEdit,
-  setConvertInvoiceToQuote
 }: {
   setSection: any;
   setQouteToEdit: any;
-  setConvertInvoiceToQuote: any;
 }) {
   const [search, setSearch] = useState("");
   const [quoteData, setQuoteData] = useState<QuoteInputs[]>([]);
