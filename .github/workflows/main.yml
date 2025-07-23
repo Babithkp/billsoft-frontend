@@ -15,19 +15,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Validate Secrets
-        run: |
-          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ] || [ -z "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" ]; then
-            echo "❌ TAURI signing keys are missing. Please check your  GitHub secrets."
-            exit 1
-          else
-            echo "✅ Secrets are set."
-          fi
-        shell: bash
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
       - name: Checkout code
         uses: actions/checkout@v4
 
