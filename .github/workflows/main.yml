@@ -1,10 +1,9 @@
 name: Tauri Build and Release
 
-
 on:
   push:
-    branches:
-      - "*"
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
