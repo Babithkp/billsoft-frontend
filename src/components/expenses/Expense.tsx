@@ -43,7 +43,7 @@ import { RiDeleteBin6Line, RiEditBoxLine } from "react-icons/ri";
 import { getExpenseIdApi } from "@/api/settings";
 import { convertToINRWords } from "@/lib/utils";
 
-interface ExpensesInputs {
+export interface ExpensesInputs {
   id: string;
   expenseId: number;
   title: string;
@@ -56,14 +56,14 @@ interface ExpensesInputs {
   description: string;
 }
 
-export default function Expense() {
+export default function Expense({data}:{data?:ExpensesInputs[]}) {
   const [search, setSearch] = useState("");
   const [formStatus, setFormStatus] = useState<"create" | "edit">("create");
   const [CreateExpenseModal, setCreateExpenseModal] = useState(false);
   const [isExpenseIdExists, setIsExpenseIdExists] = useState(false);
   const [isloading, setIsloading] = useState(false);
-  const [filteredExpense, setFilteredExpense] = useState<ExpensesInputs[]>([]);
-  const [expenseData, setExpenseData] = useState<ExpensesInputs[]>([]);
+  const [filteredExpense, setFilteredExpense] = useState<ExpensesInputs[]>(data ??[]);
+  const [expenseData, setExpenseData] = useState<ExpensesInputs[]>(data ?? []);
   const [selectedExpense, setSelectedExpense] =
     useState<ExpensesInputs | null>();
   const [expenseDetailsModal, setExpenseDetailsModal] = useState(false);
@@ -214,7 +214,7 @@ export default function Expense() {
     <>
       <section>
         <div className="flex gap-10">
-          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md">
+          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-[#F4F7FE] p-3">
                 <TbInvoice size={36} className="text-primary" />
@@ -225,7 +225,7 @@ export default function Expense() {
               </div>
             </div>
           </div>
-          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md">
+          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-[#F4F7FE] p-3">
                 <RxCube size={30} className="text-primary" />
@@ -241,7 +241,7 @@ export default function Expense() {
         </div>
       </section>
       <section
-        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md bg-[#FAFAFA] p-5 shadow-md`}
+        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md bg-[#FAFAFA] p-5 shadow-md border`}
       >
         <div className={`flex items-center justify-between`}>
           <p className="text-xl font-medium text-[#007E3B]">Expenses</p>

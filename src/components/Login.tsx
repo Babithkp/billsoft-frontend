@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import logo from "../assets/logobillsoft.png";
 import { FaRegUser } from "react-icons/fa6";
 import { MdOutlineLock } from "react-icons/md";
@@ -8,6 +8,7 @@ import tikonaLogo from "../assets/trikona.png";
 import { useNavigate } from "react-router";
 import { loginApi } from "@/api/admin";
 import { toast } from "react-toastify";
+import { getVersion } from "@tauri-apps/api/app";
 
 export default function Login() {
   const [userName, setUserName] = useState("");
@@ -31,6 +32,10 @@ export default function Login() {
     setIsLoading(false);
   };
 
+  useEffect(() => {
+    getVersion().then(setVersion);
+  }, []);
+
   return (
     <main className="flex h-screen flex-col items-center justify-between">
       <section className="grid h-full place-content-center">
@@ -44,7 +49,7 @@ export default function Login() {
               <FaRegUser size={14} />
               <input
                 placeholder="Username"
-                className="w-full outline-none placeholder:text-black"
+                className="w-full outline-none placeholder:font-medium"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
@@ -53,7 +58,7 @@ export default function Login() {
               <MdOutlineLock size={17} />
               <input
                 placeholder="Password"
-                className="w-full outline-none placeholder:text-black"
+                className="w-full outline-none placeholder:font-medium"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"

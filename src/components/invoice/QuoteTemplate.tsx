@@ -105,7 +105,7 @@ export default function QuoteTemplate({
               paddingBottom: 10,
             }}
           >
-            {quote?.items.map((item, i) => (
+            {quote?.QuoteItem.map((item, i) => (
               <View
                 style={{
                   flexDirection: "row",
@@ -115,15 +115,15 @@ export default function QuoteTemplate({
                 }}
                 key={i}
               >
-                <Text style={{ width: "45%" }}>{item.itemName}</Text>
+                <Text style={{ width: "45%" }}>{item.item.itemName}</Text>
                 <Text style={{ width: "22%", fontWeight: 800 }}>
-                  {item.purchaseQty}
+                  {item.quantity}
                 </Text>
                 <Text style={{ width: "22%", fontWeight: 800 }}>
-                  {item.sellingPrice}
+                  {item.tax}
                 </Text>
                 <Text style={{ fontWeight: 800 }}>
-                  INR {item.sellingPrice * item.purchaseQty}
+                  INR {item.amount}
                 </Text>
               </View>
             ))}
@@ -133,6 +133,7 @@ export default function QuoteTemplate({
               flexDirection: "row",
               justifyContent: "space-between",
               fontSize: 11,
+              alignItems:"center"
             }}
           >
             <View style={{ flexDirection: "row", gap: 5 }}>

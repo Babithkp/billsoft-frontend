@@ -2,16 +2,23 @@ import { IoCheckmarkCircleSharp } from "react-icons/io5";
 import { RxCube } from "react-icons/rx";
 import { TbInvoice } from "react-icons/tb";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Quotation, { QuoteInputs } from "./QuotationList";
 import QuoteCreate from "./QuoteCreate";
 import InvoiceCreate from "./InvoiceCreate";
-import Invoice, { InvoiceInputs } from "./InvoiceList";
+import Invoice, { InvoiceInput } from "./InvoiceList";
+import { getAllInvoicesApi } from "@/api/invoice";
 
-export default function InvoicePage() {
+export default function InvoicePage({
+  invoice: data,
+}: {
+  invoice: InvoiceInput[];
+}) {
   const [quoteToEdit, setQuoteToEdit] = useState<QuoteInputs>();
-  const [invoiceToEdit, setInvoiceToEdit] = useState<InvoiceInputs>();
+  const [invoiceToEdit, setInvoiceToEdit] = useState<InvoiceInput>();
+  const [invoice, setInvoice] = useState<InvoiceInput[]>(data ?? []);
+  const [convertInvoiceToQuote, setConvertInvoiceToQuote] = useState<InvoiceInput>();
 
   const [section, setSection] = useState({
     invoice: true,
@@ -20,35 +27,51 @@ export default function InvoicePage() {
     createInvoice: false,
   });
 
+  async function getAllInvoices() {
+    const response = await getAllInvoicesApi();
+    if (response && response.status === 200) {
+      setInvoice(response.data.data);
+    }
+  }
+
+  useEffect(() => {
+    getAllInvoices();
+  }, [data]);
+
   return (
     <>
       {(section.quote || section.invoice) && (
         <>
           <section>
             <div className="flex gap-10">
-              <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md">
+              <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
                 <div className="flex items-center gap-5">
                   <div className="rounded-full bg-[#F4F7FE] p-3">
                     <TbInvoice size={36} className="text-primary" />
                   </div>
                   <div className="font-medium">
                     <p className="text-muted">Total Invoices</p>
-                    <p className="text-xl text-[#007E3B]">121</p>
+                    <p className="text-xl text-[#007E3B]">{invoice?.length}</p>
                   </div>
                 </div>
               </div>
-              <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md">
+              <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
                 <div className="flex items-center gap-5">
                   <div className="rounded-full bg-[#F4F7FE] p-3">
                     <RxCube size={30} className="text-primary" />
                   </div>
                   <div className="font-medium">
                     <p className="text-muted">Total invoice value</p>
-                    <p className="text-xl text-[#007E3B]">INR 78777</p>
+                    <p className="text-xl text-[#007E3B]">
+                      INR{" "}
+                      {invoice
+                        ?.reduce((acc, curr) => acc + curr?.total, 0)
+                        .toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md">
+              <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
                 <div className="flex items-center gap-5">
                   <div className="rounded-full bg-[#F4F7FE] p-3">
                     <IoCheckmarkCircleSharp
@@ -58,7 +81,20 @@ export default function InvoicePage() {
                   </div>
                   <div className="font-medium">
                     <p className="text-muted">Total invoices paid</p>
-                    <p className="text-xl text-[#007E3B]">10</p>
+                    <p className="text-xl text-[#007E3B]">
+                      INR{" "}
+                      {invoice
+                        ?.reduce(
+                          (acc, curr) =>
+                            acc +
+                            curr?.payments?.reduce(
+                              (acc, curr) => acc + curr?.amount,
+                              0,
+                            ),
+                          0,
+                        )
+                        .toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -68,12 +104,14 @@ export default function InvoicePage() {
             <Invoice
               setSection={setSection}
               setInvoiceToEdit={setInvoiceToEdit}
+              data={invoice}
             />
           )}
           {section.quote && (
             <Quotation
               setSection={setSection}
               setQouteToEdit={setQuoteToEdit}
+              setConvertInvoiceToQuote={setConvertInvoiceToQuote}
             />
           )}
         </>
@@ -85,7 +123,13 @@ export default function InvoicePage() {
           setQuoteToEdit={setQuoteToEdit}
         />
       )}
-      {section.createInvoice && <InvoiceCreate setSection={setSection} invoiceToEdit={invoiceToEdit} setInvoiceToEdit={setInvoiceToEdit} />}
+      {section.createInvoice && (
+        <InvoiceCreate
+          setSection={setSection}
+          invoiceToEdit={invoiceToEdit}
+          setInvoiceToEdit={setInvoiceToEdit}
+        />
+      )}
     </>
   );
 }

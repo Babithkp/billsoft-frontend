@@ -30,8 +30,8 @@ export interface SettingsInputs {
   expenseSequence: number;
 }
 
-export default function Settings() {
-  const [settingsData, setSettingsData] = useState<SettingsInputs | null>(null);
+export default function Settings({data}:{data?:SettingsInputs}) {
+  const [settingsData, setSettingsData] = useState<SettingsInputs | null>(data ?? null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isOtherSettingsModalOpen, setIsOtherSettingsModalOpen] =
@@ -92,7 +92,7 @@ export default function Settings() {
       <section>
         <div className="flex flex-col gap-3">
           <p className="text-2xl font-medium">Basic Settings</p>
-          <div className="flex flex-col gap-3 rounded-md bg-[#FAFAFA] p-5 px-10">
+          <div className="flex flex-col gap-3 rounded-md bg-[#FAFAFA] p-5 px-10 border shadow-md">
             <div className="flex items-center justify-between">
               <p className="text-lg font-medium">Profile Details</p>
               <TbEdit
@@ -141,7 +141,7 @@ export default function Settings() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-3 rounded-md bg-[#FAFAFA] p-5 px-10 ">
+          <div className="flex flex-col gap-3 rounded-md bg-[#FAFAFA] p-5 px-10 border shadow-md">
             <div className="flex items-center justify-between">
               <p className="text-lg font-medium">Other Settings</p>
               <TbEdit
@@ -168,7 +168,7 @@ export default function Settings() {
           </div>
           <div className="flex flex-col gap-3">
             <p className="text-2xl font-medium">Company Settings</p>
-            <div className="flex flex-col gap-3 rounded-md bg-[#FAFAFA] p-5 px-10">
+            <div className="flex flex-col gap-3 rounded-md bg-[#FAFAFA] p-5 px-10 border shadow-md">
               <div className="flex items-center justify-between">
                 <p className="text-lg font-medium">Bank Details</p>
                 <TbEdit

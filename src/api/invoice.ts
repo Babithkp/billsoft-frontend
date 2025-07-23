@@ -54,3 +54,13 @@ export const sendInvoiceMailApi = async (email: string, data: any) => {
     console.log(error);
   }
 };
+
+
+export const getInvoiceByDateApi = async (from: any, to: any) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/v1/invoices/getByDate`,{from,to});
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};

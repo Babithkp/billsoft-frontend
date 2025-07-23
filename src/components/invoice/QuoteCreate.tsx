@@ -1,5 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
-import { QuoteInputs } from "./QuotationList";
+
 import { ClientInputs } from "../clients/ClientPage";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
@@ -18,6 +18,44 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { Button } from "../ui/button";
 import { VscLoading } from "react-icons/vsc";
 import { getQuotationIdApi } from "@/api/settings";
+import { Plus } from "lucide-react";
+import { QuoteInputs } from "./QuotationList";
+
+type QuoteInput = {
+  id: string;
+  quoteId: string;
+  date: string; // ISO format string
+  dueDate: string; // ISO format string
+  amount: number;
+  clientId: string;
+  items: ItemConfig[];
+  Client: Client;
+};
+
+type Client = {
+  id: string;
+  name: string;
+  GSTIN: string;
+  contactPerson: string;
+  email: string;
+  contactNumber: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: number;
+  creditLimit: number;
+  outstanding: number;
+};
+
+interface ItemConfig {
+  itemId: string;
+  itemName: string;
+  amount: string;
+  tax: string;
+  sellingPrice: string;
+  quantity: string;
+  actualTax: string;
+}
 
 export default function QuoteCreate({
   setSection,
@@ -26,15 +64,25 @@ export default function QuoteCreate({
 }: {
   setSection: any;
   quoteToEdit?: QuoteInputs;
-  setQuoteToEdit: any;
+  setQuoteToEdit?: any;
 }) {
-  const [selectedItems, setSelectedItems] = useState<ItemInputs[]>([]);
+  const [selectedItems, setSelectedItems] = useState<ItemConfig[]>([]);
   const [quoteIdExists, setQuoteIdExists] = useState(false);
   const [isloading, setIsloading] = useState(false);
   const [clientData, setClientData] = useState<ClientInputs[]>([]);
   const [itemData, setItemData] = useState<ItemInputs[]>([]);
   const [quotationId, setQuotationId] = useState("");
   const [formStatus, setFormStatus] = useState<"edit" | "create">("create");
+  const [itemConfig, setItemConfig] = useState({
+    itemId: "",
+    itemName: "",
+    quantity: "",
+    amount: "",
+    tax: "",
+    actualTax: "",
+    sellingPrice: "",
+  });
+  const [total, setTotal] = useState("0");
 
   const {
     register,
@@ -43,7 +91,7 @@ export default function QuoteCreate({
     setValue,
     control,
     formState: { errors },
-  } = useForm<QuoteInputs>({
+  } = useForm<QuoteInput>({
     defaultValues: {
       date: new Date().toISOString().split("T")[0],
     },
@@ -70,10 +118,61 @@ export default function QuoteCreate({
       setValue("Client.contactNumber", quoteToEdit.Client.contactNumber);
       setValue("Client.email", quoteToEdit.Client.email);
       setValue("amount", quoteToEdit.amount);
-      setSelectedItems(quoteToEdit.items);
       setValue("Client.name", quoteToEdit.Client.id);
+
+      setSelectedItems([]);
+      const mappedItems = quoteToEdit.QuoteItem.map((iteminvoice: any) => {
+        const item: ItemConfig = {
+          itemId: iteminvoice.itemId,
+          itemName: iteminvoice.item.itemName,
+          quantity: iteminvoice.quantity,
+          sellingPrice: iteminvoice.item.sellingPrice,
+          tax: iteminvoice.tax,
+          amount: iteminvoice.amount,
+          actualTax: iteminvoice.item.tax,
+        };
+        return item;
+      });
+
+      setSelectedItems(mappedItems);
     }
   }, [quoteToEdit, clientData]);
+
+  useEffect(() => {
+    if (selectedItems) {
+      const subtotal = selectedItems
+        .reduce((acc, curr) => acc + parseFloat(curr.amount), 0)
+        .toFixed(2);
+
+      setTotal(subtotal);
+    }
+  }, [selectedItems]);
+
+  useEffect(() => {
+    if (itemConfig) {
+      const amount =
+        parseFloat(itemConfig.sellingPrice) * parseFloat(itemConfig.quantity);
+      const tax = (amount * parseFloat(itemConfig.actualTax)) / 100;
+      setItemConfig({
+        ...itemConfig,
+        amount: amount ? amount.toString() : "0",
+        tax: tax ? tax.toString() : "0",
+      });
+    }
+  }, [itemConfig.quantity]);
+
+  const addItemsHandler = () => {
+    (setSelectedItems((prev) => [...prev, itemConfig]),
+      setItemConfig({
+        itemId: "",
+        amount: "",
+        tax: "",
+        sellingPrice: "",
+        quantity: "",
+        actualTax: "",
+        itemName: "",
+      }));
+  };
 
   const setClientInput = (client: ClientInputs) => {
     setValue("Client.address", client.address);
@@ -83,17 +182,14 @@ export default function QuoteCreate({
     setValue("Client.id", client.id);
   };
 
-  const onQuoteSubmit = async (data: QuoteInputs) => {
+  const onQuoteSubmit = async (data: QuoteInput) => {
     if (selectedItems.length === 0) {
       toast.error("Please select at least one item");
       return;
     }
     setIsloading(true);
-    const amount = selectedItems.reduce(
-      (acc, curr) => acc + curr.sellingPrice * curr.purchaseQty,
-      0,
-    );
-    data.amount = amount;
+
+    data.amount = parseFloat(total);
     data.items = selectedItems;
     if (formStatus === "create") {
       const response = await createQuoteApi(data);
@@ -143,15 +239,13 @@ export default function QuoteCreate({
     const response = await getAllItemsApi();
     if (response && response.status === 200) {
       const items = response.data.data;
-      const filteredItems = items.filter((item: any) => item.Quote === null);
-      setItemData(filteredItems);
+      setItemData(items);
     }
   }
   async function getQuotationId() {
     const response = await getQuotationIdApi();
     if (response && response.status === 200) {
       setQuotationId(response.data.data);
-      console.log(response.data.data);
     }
   }
   useEffect(() => {
@@ -325,15 +419,24 @@ export default function QuoteCreate({
                   <td className="border-primary border text-center"></td>
                   <td className="border-primary border">
                     <Select
-                      onValueChange={(id) => {
-                        const selected = itemData.find(
-                          (item) => item.id === id,
+                      onValueChange={(val) => {
+                        const isExist = selectedItems.find(
+                          (item) => item.itemId === val,
                         );
-                        if (
-                          selected &&
-                          !selectedItems.some((item) => item.id === id)
-                        ) {
-                          setSelectedItems((prev) => [...prev, selected]);
+                        if (isExist) {
+                          toast.warning("Item already exists");
+                          return;
+                        }
+                        const item = itemData.find((item) => item.id === val);
+                        if (item) {
+                          setItemConfig((prev) => ({
+                            ...prev,
+                            itemId: item?.id,
+                            remainingQuantity: item?.quantity.toString(),
+                            actualTax: item?.tax,
+                            sellingPrice: item?.sellingPrice.toString(),
+                            itemName: item?.itemName,
+                          }));
                         }
                       }}
                     >
@@ -355,14 +458,43 @@ export default function QuoteCreate({
                       </SelectContent>
                     </Select>
                   </td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
+                  <td className="border-primary border p-1 text-center">
+                    <div>
+                      <input
+                        className="border-primary rounded-md border px-2"
+                        placeholder="0"
+                        value={itemConfig.quantity}
+                        onChange={(e) =>
+                          setItemConfig({
+                            ...itemConfig,
+                            quantity: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </td>
+                  <td className="border-primary border text-center">
+                    INR {itemConfig.sellingPrice}
+                  </td>
+                  <td className="border-primary border text-center">
+                    {itemConfig.tax}
+                  </td>
+                  <td className="border-primary border text-center">
+                    {itemConfig.amount}
+                  </td>
+                  <td className="border-primary border text-center">
+                    <Button
+                      className="m-0 border-none p-0"
+                      variant={"outline"}
+                      onClick={addItemsHandler}
+                      type="button"
+                    >
+                      <Plus />
+                    </Button>
+                  </td>
                 </tr>
                 {selectedItems?.map((item, i) => (
-                  <tr key={item.id}>
+                  <tr key={i}>
                     <td className="border-primary border py-2 text-center">
                       {i + 1}
                     </td>
@@ -370,21 +502,16 @@ export default function QuoteCreate({
                       {item.itemName}
                     </td>
                     <td className="border-primary border text-center">
-                      {item.purchaseQty}
+                      {item.quantity}
                     </td>
                     <td className="border-primary border text-center">
                       {item.sellingPrice}
                     </td>
                     <td className="border-primary border text-center">
-                      {item.tax +
-                        "% / " +
-                        (
-                          (item.sellingPrice * parseFloat(item.tax)) /
-                          100
-                        ).toFixed(2)}
+                      {item.tax}
                     </td>
                     <td className="border-primary border text-center">
-                      {item.sellingPrice * item.purchaseQty}
+                      {item.amount}
                     </td>
                     <td className="border-primary justify-items-center border">
                       <RiDeleteBin6Line
@@ -393,7 +520,9 @@ export default function QuoteCreate({
                         className="cursor-pointer"
                         onClick={() =>
                           setSelectedItems(
-                            selectedItems.filter((i) => i.id !== item.id),
+                            selectedItems.filter(
+                              (i) => i.itemId !== item.itemId,
+                            ),
                           )
                         }
                       />
@@ -403,15 +532,7 @@ export default function QuoteCreate({
               </tbody>
             </table>
             <div className="border-primary flex justify-end border-r border-b border-l px-5 py-1">
-              <p className="text-sm">
-                Total INR{" "}
-                {selectedItems
-                  .reduce(
-                    (acc, curr) => acc + curr.sellingPrice * curr.purchaseQty,
-                    0,
-                  )
-                  .toFixed(2)}
-              </p>
+              <p className="text-sm">Total INR {total}</p>
             </div>
           </div>
         </div>

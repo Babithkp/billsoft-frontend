@@ -50,29 +50,67 @@ import {
 
 import { toast } from "react-toastify";
 import { VscLoading } from "react-icons/vsc";
-import { ClientInputs } from "../clients/ClientPage";
-import { ItemInputs } from "../inventory/InventryPage";
 import InvoiceTemplate from "./InvoiceTemplate";
 import { PiRecord } from "react-icons/pi";
 import { Controller, useForm } from "react-hook-form";
 import { convertToINRWords } from "@/lib/utils";
-import { createPaymentApi, deletePaymentApi, updatePaymentApi } from "@/api/payments";
+import {
+  createPaymentApi,
+  deletePaymentApi,
+  updatePaymentApi,
+} from "@/api/payments";
 
-export interface InvoiceInputs {
+export type InvoiceInput = {
   id: string;
   invoiceId: string;
-  date: string;
-  dueDate: string;
-  Client: ClientInputs;
+  date: string; // ISO string
+  dueDate: string; // ISO string
   discount: string;
-  subTotal: number;
-  total: number;
-  items: ItemInputs[];
-  clientId: string;
   status: string;
+  total: number;
   pendingAmount: number;
+  clientId: string;
+  ItemInvoice: ItemInvoice[];
+  Client: Client;
   payments: RecordPaymentInputs[];
-}
+};
+
+type ItemInvoice = {
+  id: string;
+  itemId: string;
+  invoiceId: string;
+  amount: number;
+  quantity: number;
+  tax: string;
+  item: Item;
+};
+
+type Item = {
+  id: string;
+  itemName: string;
+  category: string;
+  supplerName: string;
+  sellingPrice: number;
+  measurement: string;
+  quantity: number;
+  tax: string;
+  description: string;
+};
+
+type Client = {
+  id: string;
+  name: string;
+  GSTIN: string;
+  contactPerson: string;
+  email: string;
+  contactNumber: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: number;
+  creditLimit: number;
+  outstanding: number;
+};
 
 export interface RecordPaymentInputs {
   id: string;
@@ -94,21 +132,25 @@ const getMailGreeting =
 export default function Invoice({
   setSection,
   setInvoiceToEdit,
+  data,
 }: {
   setSection: any;
   setInvoiceToEdit: any;
+  data: InvoiceInput[];
 }) {
   const [search, setSearch] = useState("");
-  const [invoiceData, setInvoiceData] = useState<any[]>([]);
+  const [invoiceData, setInvoiceData] = useState<InvoiceInput[]>(data ?? []);
+  const [filteredInvoice, setFilteredInvoice] = useState<InvoiceInput[]>(
+    data ?? [],
+  );
   const [showPreview, setShowPreview] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceInputs>();
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceInput | null>(null);
   const [settingsData, setSettingsData] = useState<SettingsInputs>();
   const [attachment, setAttachment] = useState<Blob>();
   const [isOpen, setIsOpen] = useState(false);
   const [emailIds, setEmailIds] = useState("");
   const [mailGreeting, setMailGreeting] = useState(getMailGreeting);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
   const [formstate, setFormstate] = useState<"edit" | "create">("create");
   const [oldPayment, setOldPayment] = useState<number>(0);
@@ -128,15 +170,37 @@ export default function Invoice({
   });
 
   useEffect(() => {
-    if (showPreview) {
-      const timeout = setTimeout(() => {
-        setHasAnimated(true);
-      }, 300);
-      return () => clearTimeout(timeout);
-    } else {
-      setHasAnimated(false);
-    }
-  }, [showPreview]);
+    const delay = setTimeout(() => {
+      const text = search.trim().toLowerCase();
+
+      if (!text) {
+        setFilteredInvoice(invoiceData);
+        return;
+      }
+
+      const filtered = invoiceData.filter((invoice) => {
+        const fieldsToSearch: (string | number | undefined | null)[] = [
+          invoice.invoiceId,
+          invoice.Client?.name,
+          invoice.total,
+        ];
+
+        return fieldsToSearch.some((field) => {
+          if (typeof field === "string") {
+            return field.toLowerCase().includes(text);
+          }
+          if (typeof field === "number") {
+            return field.toString().includes(text);
+          }
+          return false;
+        });
+      });
+
+      setFilteredInvoice(filtered);
+    }, 300);
+
+    return () => clearTimeout(delay);
+  }, [search, invoiceData]);
 
   const amount = watch("amount");
 
@@ -225,7 +289,7 @@ export default function Invoice({
     setIsLoading(false);
   };
 
-  const selectionHandler = (invoice: InvoiceInputs) => {
+  const selectionHandler = (invoice: InvoiceInput) => {
     (setSelectedInvoice(invoice), setShowPreview(true));
   };
 
@@ -240,11 +304,14 @@ export default function Invoice({
     if (!selectedInvoice) {
       return;
     }
+
     const response = await deleteInvoiceApi(selectedInvoice?.id);
+
     if (response && response.status === 200) {
       toast.success("Invoice deleted successfully");
       setShowPreview(false);
       getAllInvoices();
+      setSelectedInvoice(null);
     } else {
       toast.error("Failed to delete invoice");
     }
@@ -290,6 +357,8 @@ export default function Invoice({
     const response = await getAllInvoicesApi();
     if (response && response.status === 200) {
       setInvoiceData(response.data.data);
+      setFilteredInvoice(response.data.data);
+      console.log(response.data.data);
     }
   };
 
@@ -310,7 +379,7 @@ export default function Invoice({
       <motion.div
         animate={{ width: showPreview ? "50%" : "100%" }}
         transition={{ duration: 0.3 }}
-        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md bg-[#FAFAFA] p-5 shadow-md ${showPreview ? "text-sm" : ""}`}
+        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md border bg-[#FAFAFA] p-5 shadow-md ${showPreview ? "text-sm" : ""}`}
       >
         <div className={`flex items-center justify-between`}>
           <p className="text-xl font-medium text-[#007E3B]">Invoices</p>
@@ -381,7 +450,7 @@ export default function Invoice({
             </tr>
           </thead>
           <tbody>
-            {invoiceData.map((invoice: any) => (
+            {filteredInvoice.map((invoice: any) => (
               <tr
                 key={invoice.id}
                 className="hover:bg-accent cursor-pointer"
@@ -411,7 +480,7 @@ export default function Invoice({
           opacity: showPreview ? 1 : 0,
         }}
         transition={{ duration: 0.3 }}
-        className="hidden h-full flex-col gap-5 rounded-lg bg-[#FAFAFA] p-5 shadow-md"
+        className="hidden h-full flex-col gap-5 rounded-lg border bg-[#FAFAFA] p-5 shadow-md"
       >
         <div className="flex items-center justify-between">
           <h3 className="text-secondary text-2xl font-medium">
@@ -420,7 +489,7 @@ export default function Invoice({
           <div className="flex items-center gap-5">
             <Button
               variant={"outline"}
-              className="text-primary border-primary rounded-full px-7"
+              className="text-primary border-primary cursor-pointer rounded-full px-7"
               onClick={() => [
                 setIsRecordModalOpen(true),
                 reset(),
@@ -569,14 +638,14 @@ export default function Invoice({
           </AlertDialog>
         </div>
 
-        {hasAnimated && (
+        {
           <PDFViewer className="h-[70vh] w-full">
             <InvoiceTemplate
               invoice={selectedInvoice}
               settings={settingsData}
             />
           </PDFViewer>
-        )}
+        }
       </motion.div>
       <Dialog open={isRecordModalOpen} onOpenChange={setIsRecordModalOpen}>
         <DialogTrigger className="hidden"></DialogTrigger>
@@ -699,7 +768,7 @@ export default function Invoice({
                         <SelectItem value="RTGS">RTGS</SelectItem>
                         <SelectItem value="NEFT">NEFT</SelectItem>
                         <SelectItem value="Cheque">Cheque</SelectItem>
-                        <SelectItem value="Nill">Nill</SelectItem>
+                        <SelectItem value="Others">Others</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -796,9 +865,7 @@ export default function Invoice({
                                           <AlertDialogAction
                                             className="bg-[#FF4C4C] hover:bg-[#FF4C4C]/50"
                                             onClick={() =>
-                                              deletePaymentRecord(
-                                                record.id,
-                                              )
+                                              deletePaymentRecord(record.id)
                                             }
                                           >
                                             Delete

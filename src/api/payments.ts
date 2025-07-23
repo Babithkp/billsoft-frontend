@@ -29,3 +29,12 @@ export const deletePaymentApi = async (id: string) => {
     console.log(error);
   }
 };
+
+export const getPaymentsApi = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/v1/payments`);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};

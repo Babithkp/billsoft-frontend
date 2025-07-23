@@ -1,14 +1,17 @@
 import { Page, Text, View, Document, Image } from "@react-pdf/renderer";
-import { InvoiceInputs } from "./InvoiceList";
+import { InvoiceInput } from "./InvoiceList";
 import { SettingsInputs } from "../settings/Settings";
 import logo from "@/assets/logobillsoft.png";
 import qrImg from "@/assets/qrcode.png";
+
+
+
 
 export default function InvoiceTemplate({
   invoice,
   settings,
 }: {
-  invoice?: InvoiceInputs;
+  invoice?: InvoiceInput | null;
   settings?: SettingsInputs;
 }) {
   return (
@@ -106,32 +109,32 @@ export default function InvoiceTemplate({
               paddingBottom: 10,
             }}
           >
-            {invoice?.items.map((item, i) => (
+            {invoice?.ItemInvoice.map((iteminvoice, i) => (
               <View
-                key={i}
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  fontSize: 11,
-                  alignItems: "center",
-                  paddingVertical: 10,
-                }}
+              key={i}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                fontSize: 11,
+                alignItems: "center",
+                paddingVertical: 10,
+              }}
               >
-                <Text style={{ width: "45%" }}>{item.itemName}</Text>
-                <Text
-                  style={{ width: "22%", fontWeight: 800, textAlign: "center" }}
-                >
-                  {item.purchaseQty}
-                </Text>
-                <Text
-                  style={{ width: "22%", fontWeight: 800, textAlign: "center" }}
-                >
-                  {item.sellingPrice}
-                </Text>
-                <Text style={{ fontWeight: 800 }}>
-                  INR {item.sellingPrice * item.purchaseQty}
-                </Text>
-              </View>
+              <Text style={{ width: "45%" }}>{iteminvoice.item.itemName}</Text>
+              <Text
+                style={{ width: "22%", fontWeight: 800, textAlign: "center" }}
+              >
+                {iteminvoice.quantity}
+              </Text>
+              <Text
+                style={{ width: "22%", fontWeight: 800, textAlign: "center" }}
+              >
+                {iteminvoice.item.sellingPrice}
+              </Text>
+              <Text style={{ fontWeight: 800 }}>
+                INR {iteminvoice.amount}
+              </Text>
+            </View>
             ))}
             <View
               style={{
@@ -151,12 +154,7 @@ export default function InvoiceTemplate({
                 <Text>Sub Total</Text>
                 <Text>
                   INR{" "}
-                  {invoice?.items
-                    ?.reduce(
-                      (acc, item) => acc + item.sellingPrice * item.purchaseQty,
-                      0,
-                    )
-                    .toFixed(2)}
+                  {invoice?.ItemInvoice.reduce((acc, iteminvoice) => acc + iteminvoice.amount, 0).toFixed(2)}
                 </Text>
               </View>
               <View
@@ -169,14 +167,7 @@ export default function InvoiceTemplate({
                 <Text>Discount ({invoice?.discount}%)</Text>
                 <Text>
                   INR{" "}
-                  {(
-                    ((invoice?.items ?? []).reduce(
-                      (acc, item) => acc + item.sellingPrice * item.purchaseQty,
-                      0,
-                    ) *
-                      parseFloat(invoice?.discount ?? "0")) /
-                    100
-                  ).toFixed(2)}
+                  {invoice?.total}
                 </Text>
               </View>
             </View>

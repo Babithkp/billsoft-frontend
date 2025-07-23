@@ -13,3 +13,32 @@ export const loginApi = async (username: string, password: string) => {
     console.log(error);
   }
 };
+
+
+export const getAllNotificationApi = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/v1/admin/notifications`);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateNotificationStatusApi = async (id: string) => {
+  try {
+    const response = await axios.patch(`${BASE_URL}/v1/admin/notifications/${id}`);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+export const deleteNotificationApi = async (id: string) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/v1/admin/notifications/${id}`);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};

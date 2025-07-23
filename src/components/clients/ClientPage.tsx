@@ -57,14 +57,14 @@ export interface ClientInputs {
   outstanding: number;
 }
 
-export default function ClientPage() {
+export default function ClientPage({data}:{data:ClientInputs[]}) {
   const [search, setSearch] = useState("");
   const [formStatus, setFormStatus] = useState<"create" | "edit">("create");
   const [isClientNameAvailable, setIsClientNameAvailable] = useState(false);
   const [isloading, setIsloading] = useState(false);
   const [clientCreateModal, setClientCreateModal] = useState(false);
-  const [clientData, setClientData] = useState<ClientInputs[]>([]);
-  const [filteredClients, setFilteredClients] = useState<ClientInputs[]>([]);
+  const [clientData, setClientData] = useState<ClientInputs[]>(data || []);
+  const [filteredClients, setFilteredClients] = useState<ClientInputs[]>(data || []);
   const [clientDetailsModal, setClientDetailsModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientInputs | null>();
 
@@ -198,7 +198,7 @@ export default function ClientPage() {
     <>
       <section>
         <div className="flex gap-10">
-          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md">
+          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-[#F4F7FE] p-3">
                 <PiUsersThree size={36} className="text-primary" />
@@ -209,14 +209,14 @@ export default function ClientPage() {
               </div>
             </div>
           </div>
-          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md">
+          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-[#F4F7FE] p-3">
                 <HiOutlineCurrencyRupee size={30} className="text-primary" />
               </div>
               <div className="font-medium">
                 <p className="text-muted ">Total pending payment</p>
-                <p className="text-xl text-[#007E3B]">INR 0</p>
+                <p className="text-xl text-[#007E3B]">INR {clientData?.reduce((acc, curr) => acc + curr?.outstanding, 0).toFixed(2)}</p>
               </div>
             </div>
           </div>

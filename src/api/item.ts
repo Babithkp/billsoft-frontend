@@ -39,3 +39,21 @@ export const updateItemApi = async (data: any) => {
     console.log(error);
   }
 };
+
+export const createPurchaseApi = async (data: any) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/v1/item/purchase`, data);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getAllPurchasesApi = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/v1/item/purchases`);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};

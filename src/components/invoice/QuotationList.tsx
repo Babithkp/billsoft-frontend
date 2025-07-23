@@ -1,8 +1,7 @@
 import { LuSearch } from "react-icons/lu";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
-import { ClientInputs } from "../clients/ClientPage";
-import { ItemInputs } from "../inventory/InventryPage";
+
 import { MdOutlineAdd } from "react-icons/md";
 import {
   deleteQuoteApi,
@@ -40,17 +39,55 @@ import {
 import { toast } from "react-toastify";
 import { VscLoading } from "react-icons/vsc";
 
-export interface QuoteInputs {
+export type QuoteInputs = {
   id: string;
   quoteId: string;
-  date: string;
-  dueDate: string;
-  Client: ClientInputs;
-  discount: number;
+  date: string; // ISO format string
+  dueDate: string; // ISO format string
   amount: number;
-  items: ItemInputs[];
   clientId: string;
-}
+  QuoteItem: QuoteItem[];
+  Client: Client;
+};
+
+type QuoteItem = {
+  id: string;
+  quoteId: string;
+  itemId: string;
+  amount: number;
+  quantity: number;
+  tax: string; 
+  item: Item;
+};
+
+type Item = {
+  id: string;
+  itemName: string;
+  category: string;
+  supplerName: string;
+  sellingPrice: number;
+  measurement: string;
+  quantity: number;
+  tax: string;
+  description: string;
+};
+
+type Client = {
+  id: string;
+  name: string;
+  GSTIN: string;
+  contactPerson: string;
+  email: string;
+  contactNumber: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: number;
+  creditLimit: number;
+  outstanding: number;
+};
+
+
 
 const getMailGreeting =
   "Please find attached the Quotation with the following details.";
@@ -58,9 +95,11 @@ const getMailGreeting =
 export default function Quotation({
   setSection,
   setQouteToEdit,
+  setConvertInvoiceToQuote
 }: {
   setSection: any;
   setQouteToEdit: any;
+  setConvertInvoiceToQuote: any;
 }) {
   const [search, setSearch] = useState("");
   const [quoteData, setQuoteData] = useState<QuoteInputs[]>([]);
@@ -73,18 +112,8 @@ export default function Quotation({
   const [emailIds, setEmailIds] = useState("");
   const [mailGreeting, setMailGreeting] = useState(getMailGreeting);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
 
-  useEffect(() => {
-    if (showPreview) {
-      const timeout = setTimeout(() => {
-        setHasAnimated(true);
-      }, 300);
-      return () => clearTimeout(timeout);
-    } else {
-      setHasAnimated(false);
-    }
-  }, [showPreview]);
+
 
   useEffect(() => {
     const delay = setTimeout(() => {
@@ -96,7 +125,7 @@ export default function Quotation({
       const filtered = quoteData.filter((quote) =>
         [quote.quoteId, quote.Client.name]
           .filter(Boolean)
-          .some((field) => field?.toLowerCase().includes(text)),
+          .some((field) => field?.toLowerCase().includes(text))
       );
       setFilteredQuotes(filtered);
     }, 300);
@@ -173,6 +202,7 @@ export default function Quotation({
     if (response && response.status === 200) {
       setQuoteData(response.data.data);
       setFilteredQuotes(response.data.data);
+      console.log(response.data.data);
     }
   }
 
@@ -192,7 +222,7 @@ export default function Quotation({
       <motion.div
         animate={{ width: showPreview ? "50%" : "100%" }}
         transition={{ duration: 0.3 }}
-        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md bg-[#FAFAFA] p-5 shadow-md ${showPreview ? "text-sm" : ""}`}
+        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md border bg-[#FAFAFA] p-5 shadow-md ${showPreview ? "text-sm" : ""}`}
       >
         <div className={`flex items-center justify-between`}>
           <p className="text-xl font-medium text-[#007E3B]">Quotes</p>
@@ -251,10 +281,10 @@ export default function Quotation({
                 </div>
               </th>
               <th className="text-muted flex items-center gap-2 text-start font-medium">
-                <p>Invoice Date</p>
+                <p>Quote Date</p>
               </th>
               <th className="text-muted text-start font-medium">
-                Total Invoice Value
+                Total Quote Value
               </th>
             </tr>
           </thead>
@@ -283,7 +313,7 @@ export default function Quotation({
           opacity: showPreview ? 1 : 0,
         }}
         transition={{ duration: 0.3 }}
-        className="hidden h-full flex-col gap-5 rounded-lg bg-[#FAFAFA] p-5 shadow-md"
+        className="hidden h-full flex-col gap-5 rounded-lg border bg-[#FAFAFA] p-5 shadow-md"
       >
         <div className="flex items-center justify-between">
           <h3 className="text-secondary text-2xl font-medium">
@@ -310,7 +340,10 @@ export default function Quotation({
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger
                 className="bg-primary cursor-pointer rounded-2xl border p-1 px-4 font-medium text-white"
-                onClick={() => [setEmailIds(selectedQuote?.Client?.email!),getPdfFile()]}
+                onClick={() => [
+                  setEmailIds(selectedQuote?.Client?.email!),
+                  getPdfFile(),
+                ]}
               >
                 Send mail
               </DialogTrigger>
@@ -424,11 +457,11 @@ export default function Quotation({
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        {hasAnimated && (
+        {
           <PDFViewer className="h-[70vh] w-full">
             <QuoteTemplate quote={selectedQuote} settings={settingsData} />
           </PDFViewer>
-        )}
+        }
       </motion.div>
     </section>
   );

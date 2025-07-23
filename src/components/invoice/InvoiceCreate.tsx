@@ -11,14 +11,56 @@ import {
   SelectValue,
 } from "../ui/select";
 import { getAllClientsApi } from "@/api/client";
-import { RiDeleteBin6Line } from "react-icons/ri";
 import { getAllItemsApi } from "@/api/item";
 import { Button } from "../ui/button";
 import { createInvoiceApi, updateInvoiceApi } from "@/api/invoice";
 import { toast } from "react-toastify";
 import { VscLoading } from "react-icons/vsc";
 import { getInvoiceIdApi } from "@/api/settings";
-import { InvoiceInputs } from "./InvoiceList";
+
+import { Plus } from "lucide-react";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { InvoiceInput } from "./InvoiceList";
+
+export interface ItemConfig {
+  itemId: string;
+  itemName: string;
+  amount: string;
+  tax: string;
+  remainingQuantity: string;
+  sellingPrice: string;
+  quantity: string;
+  actualTax: string;
+}
+
+type Invoice = {
+  id: string;
+  invoiceId: string;
+  date: string;
+  dueDate: string;
+  discount: string;
+  status: string;
+  total: number;
+  pendingAmount: number;
+  clientId: string;
+  Client: Client;
+  items: ItemConfig[];
+};
+
+type Client = {
+  id: string;
+  name: string;
+  GSTIN: string;
+  contactPerson: string;
+  email: string;
+  contactNumber: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: number;
+  creditLimit: number;
+  outstanding: number;
+};
 
 export default function InvoiceCreate({
   setSection,
@@ -26,18 +68,50 @@ export default function InvoiceCreate({
   setInvoiceToEdit,
 }: {
   setSection: any;
-  invoiceToEdit: any;
-  setInvoiceToEdit: any;
+  invoiceToEdit?: InvoiceInput;
+  setInvoiceToEdit?: any;
 }) {
   const [formStatus, setFormStatus] = useState<"edit" | "create">("create");
   const [invoiceIdExists, setInvoiceIdExists] = useState(false);
   const [clientData, setClientData] = useState<ClientInputs[]>([]);
-  const [selectedItems, setSelectedItems] = useState<ItemInputs[]>([]);
+  const [selectedItems, setSelectedItems] = useState<ItemConfig[]>([]);
   const [itemData, setItemData] = useState<ItemInputs[]>([]);
   const [discountTotal, setDiscountTotal] = useState("0");
   const [total, setTotal] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
   const [invoiceId, setInvoiceId] = useState("");
+  const [itemConfig, setItemConfig] = useState({
+    itemId: "",
+    itemName: "",
+    quantity: "",
+    remainingQuantity: "",
+    amount: "",
+    tax: "",
+    actualTax: "",
+    sellingPrice: "",
+  });
+  const [quantityError, setQuantityError] = useState(false);
+
+  useEffect(() => {
+    if (
+      parseInt(itemConfig.remainingQuantity) < parseInt(itemConfig.quantity)
+    ) {
+      setQuantityError(true);
+      return;
+    } else {
+      setQuantityError(false);
+    }
+    if (itemConfig) {
+      const amount =
+        parseFloat(itemConfig.sellingPrice) * parseFloat(itemConfig.quantity);
+      const tax = (amount * parseFloat(itemConfig.actualTax)) / 100;
+      setItemConfig({
+        ...itemConfig,
+        amount: amount ? amount.toString() : "0",
+        tax: tax ? tax.toString() : "0",
+      });
+    }
+  }, [itemConfig.quantity]);
 
   const {
     register,
@@ -47,7 +121,7 @@ export default function InvoiceCreate({
     control,
     watch,
     formState: { errors },
-  } = useForm<InvoiceInputs>({
+  } = useForm<Invoice>({
     defaultValues: {
       date: new Date().toISOString().split("T")[0],
     },
@@ -75,7 +149,22 @@ export default function InvoiceCreate({
       setValue("discount", invoiceToEdit.discount);
       setValue("Client.name", invoiceToEdit.Client.id);
 
-      setSelectedItems(invoiceToEdit.items);
+      setSelectedItems([]);
+      const mappedItems = invoiceToEdit.ItemInvoice.map((iteminvoice: any) => {
+        const item: ItemConfig = {
+          itemId: iteminvoice.itemId,
+          itemName: iteminvoice.item.itemName,
+          quantity: iteminvoice.quantity,
+          sellingPrice: iteminvoice.item.sellingPrice,
+          tax: iteminvoice.tax,
+          remainingQuantity: iteminvoice.item.quantity,
+          amount: iteminvoice.amount,
+          actualTax: iteminvoice.item.tax,
+        };
+        return item;
+      });
+
+      setSelectedItems(mappedItems);
     }
   }, [invoiceToEdit, clientData]);
 
@@ -90,15 +179,19 @@ export default function InvoiceCreate({
   const discount = watch("discount");
 
   useEffect(() => {
-    if (discount) {
-      const subTotal = selectedItems
-        .reduce((acc, curr) => acc + curr.sellingPrice * curr.purchaseQty, 0)
+    if (discount && selectedItems) {
+      const total = selectedItems
+        .reduce((acc, curr) => acc + parseFloat(curr.amount), 0)
+        .toFixed(2);
+      const newTotal = parseFloat(total) * (parseFloat(discount) / 100);
+      setDiscountTotal(newTotal.toFixed(2));
+      setTotal((parseFloat(total) - newTotal).toString());
+    } else if (selectedItems) {
+      const subtotal = selectedItems
+        .reduce((acc, curr) => acc + parseFloat(curr.amount), 0)
         .toFixed(2);
 
-      const newTotal = parseFloat(subTotal) * (parseFloat(discount) / 100);
-      setDiscountTotal(newTotal.toFixed(2));
-
-      setTotal((parseFloat(subTotal) - newTotal).toString());
+      setTotal(subtotal);
     }
   }, [discount, selectedItems]);
 
@@ -110,7 +203,11 @@ export default function InvoiceCreate({
     setValue("Client.id", client.id);
   };
 
-  const onSubmit = async (data: InvoiceInputs) => {
+  const onSubmit = async (data: Invoice) => {
+    if (selectedItems.length === 0) {
+      toast.error("Please add items");
+      return;
+    }
     setIsLoading(true);
     data.items = selectedItems;
     data.total = parseFloat(total);
@@ -138,7 +235,7 @@ export default function InvoiceCreate({
       if (response && response.status === 200) {
         toast.success("Invoice updated successfully");
         reset();
-        setInvoiceToEdit();
+        setInvoiceToEdit ? setInvoiceToEdit() : null;
         setFormStatus("create");
         setSection({
           invoice: true,
@@ -153,6 +250,20 @@ export default function InvoiceCreate({
     setIsLoading(false);
   };
 
+  const addItemsHandler = () => {
+    (setSelectedItems((prev) => [...prev, itemConfig]),
+      setItemConfig({
+        itemId: "",
+        amount: "",
+        tax: "",
+        remainingQuantity: "",
+        sellingPrice: "",
+        quantity: "",
+        actualTax: "",
+        itemName: "",
+      }));
+  };
+
   async function getClients() {
     const response = await getAllClientsApi();
     if (response && response.status === 200) {
@@ -164,8 +275,9 @@ export default function InvoiceCreate({
     const response = await getAllItemsApi();
     if (response && response.status === 200) {
       const items = response.data.data;
-      const filteredItems = items.filter((item: any) => item.Invoice === null);
-      setItemData(filteredItems);
+
+      // const filteredItems = items.filter((item: any) => item.Invoice === null);
+      setItemData(items);
     }
   }
 
@@ -334,15 +446,24 @@ export default function InvoiceCreate({
                   <td className="border-primary border text-center"></td>
                   <td className="border-primary border">
                     <Select
-                      onValueChange={(id) => {
-                        const selected = itemData.find(
-                          (item) => item.id === id,
+                      onValueChange={(val) => {
+                        const isExist = selectedItems.find(
+                          (item) => item.itemId === val,
                         );
-                        if (
-                          selected &&
-                          !selectedItems.some((item) => item.id === id)
-                        ) {
-                          setSelectedItems((prev) => [...prev, selected]);
+                        if (isExist) {
+                          toast.warning("Item already exists");
+                          return;
+                        }
+                        const item = itemData.find((item) => item.id === val);
+                        if (item) {
+                          setItemConfig((prev) => ({
+                            ...prev,
+                            itemId: item?.id,
+                            remainingQuantity: item?.quantity.toString(),
+                            actualTax: item?.tax,
+                            sellingPrice: item?.sellingPrice.toString(),
+                            itemName: item?.itemName,
+                          }));
                         }
                       }}
                     >
@@ -364,14 +485,49 @@ export default function InvoiceCreate({
                       </SelectContent>
                     </Select>
                   </td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
-                  <td className="border-primary border text-center"></td>
+                  <td className="border-primary border p-1 text-center">
+                    <div>
+                      <input
+                        className="border-primary rounded-md border px-2"
+                        placeholder="0"
+                        value={itemConfig.quantity}
+                        onChange={(e) =>
+                          setItemConfig({
+                            ...itemConfig,
+                            quantity: e.target.value,
+                          })
+                        }
+                      />{" "}
+                      / {itemConfig.remainingQuantity}
+                    </div>
+                    {quantityError && (
+                      <p className="text-sm text-red-500">
+                        Quantity cannot be greater than remaining quantity
+                      </p>
+                    )}
+                  </td>
+                  <td className="border-primary border text-center">
+                    INR {itemConfig.sellingPrice}
+                  </td>
+                  <td className="border-primary border text-center">
+                    {itemConfig.tax}
+                  </td>
+                  <td className="border-primary border text-center">
+                    {itemConfig.amount}
+                  </td>
+                  <td className="border-primary border text-center">
+                    <Button
+                      className="m-0 border-none p-0"
+                      variant={"outline"}
+                      onClick={addItemsHandler}
+                      type="button"
+                    >
+                      <Plus />
+                    </Button>
+                  </td>
                 </tr>
                 {selectedItems?.map((item, i) => (
-                  <tr key={item.id}>
+                  <tr key={i}>
                     <td className="border-primary border py-2 text-center">
                       {i + 1}
                     </td>
@@ -379,21 +535,16 @@ export default function InvoiceCreate({
                       {item.itemName}
                     </td>
                     <td className="border-primary border text-center">
-                      {item.purchaseQty}
+                      {item.quantity}
                     </td>
                     <td className="border-primary border text-center">
                       {item.sellingPrice}
                     </td>
                     <td className="border-primary border text-center">
-                      {item.tax +
-                        "% / " +
-                        (
-                          (item.sellingPrice * parseFloat(item.tax)) /
-                          100
-                        ).toFixed(2)}
+                      {item.tax}
                     </td>
                     <td className="border-primary border text-center">
-                      {item.sellingPrice * item.purchaseQty}
+                      {item.amount}
                     </td>
                     <td className="border-primary justify-items-center border">
                       <RiDeleteBin6Line
@@ -402,7 +553,9 @@ export default function InvoiceCreate({
                         className="cursor-pointer"
                         onClick={() =>
                           setSelectedItems(
-                            selectedItems.filter((i) => i.id !== item.id),
+                            selectedItems.filter(
+                              (i) => i.itemId !== item.itemId,
+                            ),
                           )
                         }
                       />
@@ -415,10 +568,7 @@ export default function InvoiceCreate({
               <p>
                 SubTotal INR{" "}
                 {selectedItems
-                  .reduce(
-                    (acc, curr) => acc + curr.sellingPrice * curr.purchaseQty,
-                    0,
-                  )
+                  .reduce((acc, curr) => acc + parseFloat(curr.amount), 0)
                   .toFixed(2)}
               </p>
               <div className="flex gap-5">
@@ -457,7 +607,7 @@ export default function InvoiceCreate({
                   createInvoice: false,
                 }),
                 reset(),
-                setInvoiceToEdit(),
+                setInvoiceToEdit ? setInvoiceToEdit() : null,
                 setFormStatus("create"),
               ]}
               disabled={isLoading}
