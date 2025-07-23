@@ -57,3 +57,22 @@ export const getAllPurchasesApi = async () => {
     console.log(error);
   }
 };
+
+export const updatePurchaseApi = async (data: any) => {
+  try {
+    const response = await axios.patch(`${BASE_URL}/v1/item/purchase/update/${data.id}`, data);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+export const deletePurchaseApi = async (id: string) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/v1/item/purchase/delete/${id}`);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};

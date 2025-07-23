@@ -3,7 +3,7 @@ import { PiUsersThree } from "react-icons/pi";
 import { PiHandbagSimpleBold } from "react-icons/pi";
 import { FaRegClock } from "react-icons/fa6";
 import { ClientInputs } from "./clients/ClientPage";
-import { ItemInputs, PurchaseInputs } from "./inventory/InventryPage";
+import { PurchaseInputs } from "./inventory/InventryPage";
 import {
   LineChart,
   Line,
