@@ -144,7 +144,9 @@ export default function Invoice({
     data ?? [],
   );
   const [showPreview, setShowPreview] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceInput | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceInput | null>(
+    null,
+  );
   const [settingsData, setSettingsData] = useState<SettingsInputs>();
   const [attachment, setAttachment] = useState<Blob>();
   const [isOpen, setIsOpen] = useState(false);
@@ -405,8 +407,7 @@ export default function Invoice({
                 })
               }
             >
-              <MdOutlineAdd size={24} />
-              Quote
+              View Quote
             </Button>
             <Button
               className="rounded-xl px-7"

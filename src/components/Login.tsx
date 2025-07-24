@@ -83,9 +83,8 @@ export default function Login() {
         <div className="flex items-center gap-2 font-medium">
           <p>A Product of</p>
           <a href="https://www.trikonatech.com" target="_blank">
-            <img src={tikonaLogo} alt="tikona" className="w-8" />
+            <img src={tikonaLogo} alt="tikona" className="w-35" />
           </a>
-          <p>Trikona</p>
         </div>
       </footer>
     </main>

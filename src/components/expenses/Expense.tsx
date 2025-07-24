@@ -343,9 +343,8 @@ export default function Expense({data}:{data?:ExpensesInputs[]}) {
                                 />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="5">5</SelectItem>
-                                <SelectItem value="12">12</SelectItem>
-                                <SelectItem value="18">18</SelectItem>
+                                <SelectItem value="Fuel">Fuel</SelectItem>
+                                <SelectItem value="Salary">Salary</SelectItem>
                               </SelectContent>
                             </Select>
                           )}

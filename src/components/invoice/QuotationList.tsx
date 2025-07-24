@@ -56,7 +56,7 @@ type QuoteItem = {
   itemId: string;
   amount: number;
   quantity: number;
-  tax: string; 
+  tax: string;
   item: Item;
 };
 
@@ -87,8 +87,6 @@ type Client = {
   outstanding: number;
 };
 
-
-
 const getMailGreeting =
   "Please find attached the Quotation with the following details.";
 
@@ -111,8 +109,6 @@ export default function Quotation({
   const [mailGreeting, setMailGreeting] = useState(getMailGreeting);
   const [isLoading, setIsLoading] = useState(false);
 
-
-
   useEffect(() => {
     const delay = setTimeout(() => {
       const text = search.trim().toLowerCase();
@@ -123,7 +119,7 @@ export default function Quotation({
       const filtered = quoteData.filter((quote) =>
         [quote.quoteId, quote.Client.name]
           .filter(Boolean)
-          .some((field) => field?.toLowerCase().includes(text))
+          .some((field) => field?.toLowerCase().includes(text)),
       );
       setFilteredQuotes(filtered);
     }, 300);
@@ -246,8 +242,7 @@ export default function Quotation({
                 })
               }
             >
-              <MdOutlineAdd size={24} />
-              Invoice
+              View Invoice
             </Button>
             <Button
               className="rounded-xl px-7"

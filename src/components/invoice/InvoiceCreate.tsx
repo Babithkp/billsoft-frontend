@@ -107,7 +107,7 @@ export default function InvoiceCreate({
       const tax = (amount * parseFloat(itemConfig.actualTax)) / 100;
       setItemConfig({
         ...itemConfig,
-        amount: amount ? amount.toString() : "0",
+        amount: amount ? (amount + tax).toString() : "0",
         tax: tax ? tax.toString() : "0",
       });
     }
