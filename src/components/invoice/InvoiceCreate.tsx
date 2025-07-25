@@ -446,6 +446,7 @@ export default function InvoiceCreate({
                   <td className="border-primary border text-center"></td>
                   <td className="border-primary border">
                     <Select
+                     
                       onValueChange={(val) => {
                         const isExist = selectedItems.find(
                           (item) => item.itemId === val,

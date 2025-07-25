@@ -56,13 +56,15 @@ export interface ExpensesInputs {
   description: string;
 }
 
-export default function Expense({data}:{data?:ExpensesInputs[]}) {
+export default function Expense({ data }: { data?: ExpensesInputs[] }) {
   const [search, setSearch] = useState("");
   const [formStatus, setFormStatus] = useState<"create" | "edit">("create");
   const [CreateExpenseModal, setCreateExpenseModal] = useState(false);
   const [isExpenseIdExists, setIsExpenseIdExists] = useState(false);
   const [isloading, setIsloading] = useState(false);
-  const [filteredExpense, setFilteredExpense] = useState<ExpensesInputs[]>(data ??[]);
+  const [filteredExpense, setFilteredExpense] = useState<ExpensesInputs[]>(
+    data ?? [],
+  );
   const [expenseData, setExpenseData] = useState<ExpensesInputs[]>(data ?? []);
   const [selectedExpense, setSelectedExpense] =
     useState<ExpensesInputs | null>();
@@ -214,7 +216,7 @@ export default function Expense({data}:{data?:ExpensesInputs[]}) {
     <>
       <section>
         <div className="flex gap-10">
-          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
+          <div className="flex w-full rounded-xl border bg-[#FAFAFA] p-5 shadow-md">
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-[#F4F7FE] p-3">
                 <TbInvoice size={36} className="text-primary" />
@@ -225,7 +227,7 @@ export default function Expense({data}:{data?:ExpensesInputs[]}) {
               </div>
             </div>
           </div>
-          <div className="flex w-full rounded-xl bg-[#FAFAFA] p-5 shadow-md border">
+          <div className="flex w-full rounded-xl border bg-[#FAFAFA] p-5 shadow-md">
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-[#F4F7FE] p-3">
                 <RxCube size={30} className="text-primary" />
@@ -241,7 +243,7 @@ export default function Expense({data}:{data?:ExpensesInputs[]}) {
         </div>
       </section>
       <section
-        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md bg-[#FAFAFA] p-5 shadow-md border`}
+        className={`flex h-fit max-h-[88vh] w-full flex-col gap-5 overflow-y-auto rounded-md border bg-[#FAFAFA] p-5 shadow-md`}
       >
         <div className={`flex items-center justify-between`}>
           <p className="text-xl font-medium text-[#007E3B]">Expenses</p>
@@ -345,6 +347,14 @@ export default function Expense({data}:{data?:ExpensesInputs[]}) {
                               <SelectContent>
                                 <SelectItem value="Fuel">Fuel</SelectItem>
                                 <SelectItem value="Salary">Salary</SelectItem>
+                                <SelectItem value="Transport">
+                                  Transport
+                                </SelectItem>
+                                <SelectItem value="Travel">Travel</SelectItem>
+                                <SelectItem value="Loading/unloading">
+                                  Loading/unloading
+                                </SelectItem>
+                                <SelectItem value="Others">Others</SelectItem>
                               </SelectContent>
                             </Select>
                           )}
@@ -479,10 +489,10 @@ export default function Expense({data}:{data?:ExpensesInputs[]}) {
               <th className="text-muted text-start font-medium">
                 <p>Expense ID</p>
               </th>
-              <th className="text-muted  font-medium">
+              <th className="text-muted font-medium">
                 <p>Title</p>
               </th>
-              <th className="text-muted   font-medium">
+              <th className="text-muted font-medium">
                 <p>Total Purchase Value</p>
               </th>
               <th className="text-muted text-center font-medium">

@@ -549,7 +549,7 @@ export default function Invoice({
                       className="h-20"
                     ></textarea>
                     <div>
-                      <p>Shipment Details:</p>
+                      <p>Invoice Details:</p>
                       <p>Invoice#: {selectedInvoice?.invoiceId}</p>
                       <p>Customer Name: {selectedInvoice?.Client.name}</p>
                     </div>

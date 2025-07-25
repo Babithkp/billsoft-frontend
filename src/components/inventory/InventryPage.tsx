@@ -825,7 +825,7 @@ export default function InventryPage({ data }: { data: ItemInputs[] }) {
                   <td className="py-2">{item.quantity}</td>
                   <td className="py-2">{item.sellingPrice}</td>
                   <td className="py-2">
-                    {item.sellingPrice * (parseInt(item.tax) / 100)}
+                    {(item.sellingPrice * (parseInt(item.tax) / 100)).toFixed(2)}
                   </td>
                 </tr>
               ))}
