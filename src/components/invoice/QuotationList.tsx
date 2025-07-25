@@ -313,12 +313,7 @@ export default function Quotation({
             {selectedQuote?.quoteId}
           </h3>
           <div className="flex items-center gap-5">
-            <Button
-              variant={"outline"}
-              className="text-primary border-primary rounded-full px-7"
-            >
-              Convert to Invoice
-            </Button>
+
             <button className="bg-primary/50 cursor-pointer rounded-full p-1">
               <RxCross2
                 size={20}
