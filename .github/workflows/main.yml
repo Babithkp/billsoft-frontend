@@ -56,11 +56,16 @@ jobs:
           prerelease: false
           args: "--target x86_64-pc-windows-msvc"
 
+      - name: List 64-bit updater files
+        shell: pwsh
+        run: Get-ChildItem -Recurse src-tauri/target/x86_64-pc-windows-msvc/release/bundle/updater
+
       - name: Move 64-bit updater files
+        shell: pwsh
         run: |
-          mkdir -p artifacts/updater/x64
-          cp src-tauri/target/x86_64-pc-windows-msvc/release/bundle/updater/latest.json artifacts/updater/x64/latest.json
-          cp src-tauri/target/x86_64-pc-windows-msvc/release/bundle/updater/*.sig artifacts/updater/x64/
+          New-Item -ItemType Directory -Force -Path artifacts/updater/x64
+          Copy-Item "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/updater/latest.json" -Destination "artifacts/updater/x64/latest.json"
+          Copy-Item "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/updater/*.sig" -Destination "artifacts/updater/x64/"
 
       # --- Build for 32-bit ---
       - name: Build Tauri App - 32-bit
@@ -77,11 +82,16 @@ jobs:
           prerelease: false
           args: "--target i686-pc-windows-msvc"
 
+      - name: List 32-bit updater files
+        shell: pwsh
+        run: Get-ChildItem -Recurse src-tauri/target/i686-pc-windows-msvc/release/bundle/updater
+
       - name: Move 32-bit updater files
+        shell: pwsh
         run: |
-          mkdir -p artifacts/updater/x86
-          cp src-tauri/target/i686-pc-windows-msvc/release/bundle/updater/latest.json artifacts/updater/x86/latest.json
-          cp src-tauri/target/i686-pc-windows-msvc/release/bundle/updater/*.sig artifacts/updater/x86/
+          New-Item -ItemType Directory -Force -Path artifacts/updater/x86
+          Copy-Item "src-tauri/target/i686-pc-windows-msvc/release/bundle/updater/latest.json" -Destination "artifacts/updater/x86/latest.json"
+          Copy-Item "src-tauri/target/i686-pc-windows-msvc/release/bundle/updater/*.sig" -Destination "artifacts/updater/x86/"
 
       - name: Upload Installers and Updater Artifacts
         uses: softprops/action-gh-release@v2
