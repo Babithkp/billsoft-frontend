@@ -50,7 +50,7 @@ export default function QuoteTemplate({
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: "flex-start",
               fontSize: 11,
               lineHeight: 1.5,
             }}
@@ -93,9 +93,10 @@ export default function QuoteTemplate({
               fontSize: 12,
             }}
           >
-            <Text style={{ width: "45%" }}>ITEM DESCRIPTION</Text>
-            <Text style={{ width: "22%" }}>QTY</Text>
-            <Text style={{ width: "22%" }}>RATE</Text>
+            <Text style={{ width: "55%" }}>ITEM DESCRIPTION</Text>
+            <Text style={{ width: "15%" }}>QTY</Text>
+            <Text style={{ width: "20%" }}>UNIT</Text>
+            <Text style={{ width: "25%" }}>RATE</Text>
             <Text>AMOUNT</Text>
           </View>
           <View
@@ -107,25 +108,57 @@ export default function QuoteTemplate({
           >
             {quote?.QuoteItem.map((item, i) => (
               <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingVertical: 6,
+              }}
+              key={i}
+            >
+              <Text style={{ width: "45%", fontSize: 12 }}>
+                {item.item.itemName}
+              </Text>
+            
+              <Text
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  fontSize: 11,
+                  width: "15%",
+                  textAlign: "center",
+                  fontWeight: "800",
                 }}
-                key={i}
               >
-                <Text style={{ width: "45%" }}>{item.item.itemName}</Text>
-                <Text style={{ width: "22%", fontWeight: 800 }}>
-                  {item.quantity}
-                </Text>
-                <Text style={{ width: "22%", fontWeight: 800 }}>
-                  {item.tax}
-                </Text>
-                <Text style={{ fontWeight: 800 }}>
-                  INR {item.amount}
-                </Text>
-              </View>
+                {item.quantity}
+              </Text>
+              <Text
+                style={{
+                  width: "15%",
+                  textAlign: "center",
+                  fontWeight: "800",
+                }}
+              >
+                {item.item.measurement}
+              </Text>
+            
+              <Text
+                style={{
+                  width: "15%",
+                  textAlign: "center",
+                  fontWeight: "800",
+                }}
+              >
+                {item.tax}
+              </Text>
+            
+              <Text
+                style={{
+                  width: "25%",
+                  textAlign: "right",
+                  fontWeight: "800",
+                }}
+              >
+                {item.amount}
+              </Text>
+            </View>
+            
             ))}
           </View>
           <View
@@ -166,10 +199,6 @@ export default function QuoteTemplate({
             <Image src={logo} style={{ objectFit: "cover" }} />
           </View>
           <View
-            style={{
-              color: "#6F6F84",
-              gap: 10,
-            }}
           >
             <Text>{settings?.website}</Text>
             <Text>{settings?.email}</Text>

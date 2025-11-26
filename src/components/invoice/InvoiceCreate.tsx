@@ -31,6 +31,7 @@ export interface ItemConfig {
   sellingPrice: string;
   quantity: string;
   actualTax: string;
+  unit:string
 }
 
 type Invoice = {
@@ -89,6 +90,7 @@ export default function InvoiceCreate({
     tax: "",
     actualTax: "",
     sellingPrice: "",
+    unit:""
   });
   const [quantityError, setQuantityError] = useState(false);
 
@@ -160,6 +162,7 @@ export default function InvoiceCreate({
           remainingQuantity: iteminvoice.item.quantity,
           amount: iteminvoice.amount,
           actualTax: iteminvoice.item.tax,
+          unit:iteminvoice.item.unit
         };
         return item;
       });
@@ -261,6 +264,7 @@ export default function InvoiceCreate({
         quantity: "",
         actualTax: "",
         itemName: "",
+        unit:""
       }));
   };
 
@@ -433,6 +437,7 @@ export default function InvoiceCreate({
                     Item Details
                   </th>
                   <th className="border-primary border font-[500]">Quantity</th>
+                  <th className="border-primary border font-[500]">Unit</th>
                   <th className="border-primary border font-[500]">Price</th>
                   <th className="border-primary border font-[500]">
                     Tax %/ Tax Amount
@@ -464,6 +469,7 @@ export default function InvoiceCreate({
                             actualTax: item?.tax,
                             sellingPrice: item?.sellingPrice.toString(),
                             itemName: item?.itemName,
+                            unit:item?.measurement.toString(),
                           }));
                         }
                       }}
@@ -508,6 +514,9 @@ export default function InvoiceCreate({
                     )}
                   </td>
                   <td className="border-primary border text-center">
+                    {itemConfig.unit}
+                  </td>
+                  <td className="border-primary border text-center">
                     INR {itemConfig.sellingPrice}
                   </td>
                   <td className="border-primary border text-center">
@@ -537,6 +546,9 @@ export default function InvoiceCreate({
                     </td>
                     <td className="border-primary border text-center">
                       {item.quantity}
+                    </td>
+                    <td className="border-primary border text-center">
+                      {item.unit}
                     </td>
                     <td className="border-primary border text-center">
                       {item.sellingPrice}

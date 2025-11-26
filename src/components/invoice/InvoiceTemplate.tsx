@@ -100,6 +100,7 @@ export default function InvoiceTemplate({
           >
             <Text style={{ width: "45%" }}>ITEM DESCRIPTION</Text>
             <Text style={{ width: "22%", textAlign: "center" }}>QTY</Text>
+            <Text style={{ width: "22%", textAlign: "center" }}>UNIT</Text>
             <Text style={{ width: "22%", textAlign: "center" }}>RATE</Text>
             <Text>AMOUNT</Text>
           </View>
@@ -125,6 +126,11 @@ export default function InvoiceTemplate({
                 style={{ width: "22%", fontWeight: 800, textAlign: "center" }}
               >
                 {iteminvoice.quantity}
+              </Text>
+              <Text
+                style={{ width: "22%", fontWeight: 800, textAlign: "center" }}
+              >
+                {iteminvoice.item.measurement}
               </Text>
               <Text
                 style={{ width: "22%", fontWeight: 800, textAlign: "center" }}

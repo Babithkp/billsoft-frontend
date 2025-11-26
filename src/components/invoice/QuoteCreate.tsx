@@ -55,6 +55,7 @@ interface ItemConfig {
   sellingPrice: string;
   quantity: string;
   actualTax: string;
+  unit:string
 }
 
 export default function QuoteCreate({
@@ -81,6 +82,7 @@ export default function QuoteCreate({
     tax: "",
     actualTax: "",
     sellingPrice: "",
+    unit:""
   });
   const [total, setTotal] = useState("0");
 
@@ -130,6 +132,7 @@ export default function QuoteCreate({
           tax: iteminvoice.tax,
           amount: iteminvoice.amount,
           actualTax: iteminvoice.item.tax,
+          unit:iteminvoice.item.unit
         };
         return item;
       });
@@ -171,6 +174,7 @@ export default function QuoteCreate({
         quantity: "",
         actualTax: "",
         itemName: "",
+        unit:""
       }));
   };
 
@@ -406,6 +410,7 @@ export default function QuoteCreate({
                     Item Details
                   </th>
                   <th className="border-primary border font-[500]">Quantity</th>
+                  <th className="border-primary border font-[500]">Unit</th>
                   <th className="border-primary border font-[500]">Price</th>
                   <th className="border-primary border font-[500]">
                     Tax %/ Tax Amount
@@ -436,6 +441,7 @@ export default function QuoteCreate({
                             actualTax: item?.tax,
                             sellingPrice: item?.sellingPrice.toString(),
                             itemName: item?.itemName,
+                            unit:item?.measurement.toString()
                           }));
                         }
                       }}
@@ -474,6 +480,9 @@ export default function QuoteCreate({
                     </div>
                   </td>
                   <td className="border-primary border text-center">
+                    {itemConfig.unit}
+                  </td>
+                  <td className="border-primary border text-center">
                     INR {itemConfig.sellingPrice}
                   </td>
                   <td className="border-primary border text-center">
@@ -503,6 +512,9 @@ export default function QuoteCreate({
                     </td>
                     <td className="border-primary border text-center">
                       {item.quantity}
+                    </td>
+                    <td className="border-primary border text-center">
+                      {item.unit}
                     </td>
                     <td className="border-primary border text-center">
                       {item.sellingPrice}
